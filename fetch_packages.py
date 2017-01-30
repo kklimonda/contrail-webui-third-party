@@ -13,7 +13,10 @@ from time import sleep
 _RETRIES = 5
 _OPT_VERBOSE = None
 _OPT_DRY_RUN = None
-_PACKAGE_CACHE='/tmp/cache/' + os.environ['USER'] + '/webui_third_party'
+if "USER" in os.environ.keys():
+    _PACKAGE_CACHE='/tmp/cache/' + os.environ['USER'] + '/webui_third_party'
+else:
+    _PACKAGE_CACHE=".cache/"
 _NODE_MODULES='./node_modules'
 _TMP_NODE_MODULES=_PACKAGE_CACHE + '/' + _NODE_MODULES
 _TAR_COMMAND = ['tar']
@@ -104,6 +107,7 @@ def DownloadPackage(url, pkg, md5):
     
     retry_count = 0
     while True:
+        print "Package file: ", pkg
         subprocess.call(['wget', '--no-check-certificate', '-O', pkg, url])
         md5sum = FindMd5sum(pkg)
         if _OPT_VERBOSE:
@@ -284,10 +288,8 @@ if __name__ == '__main__':
         if opt in ("-f","--file"):
             xmlfile = arg
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
-    try:
+    if not os.path.isdir(_PACKAGE_CACHE):
         os.makedirs(_PACKAGE_CACHE)
-    except OSError:
-        pass
 
     if xmlfile == None:
         main('packages.xml')
